@@ -41,11 +41,13 @@ export const useAuth = create((set) => ({
         });
       }
     } catch (err) {
+      const errorMsg = err.response?.data?.message || "Login failed";
+      const hint = err.response?.status === 401 ? " - Check email and password, or register if you don't have an account" : "";
       set({
         loading: false,
         isAuthenticated: false,
         currentUser: null,
-        error: err.response?.data?.message || "Login failed",
+        error: errorMsg + hint,
       });
     }
   },

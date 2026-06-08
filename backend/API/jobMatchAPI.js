@@ -6,7 +6,11 @@ import JobMatch from "../Model/jobMatchModel.js";
 import User from "../Model/userModel.js";
 
 export const jobMatchApp = exp.Router();
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+// Initialize OpenAI with fallback
+const openai = process.env.OPENAI_API_KEY
+  ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+  : null;
 
 // Job Role Experience Level
 const ROLE_EXPERIENCE_LEVEL = {
@@ -231,6 +235,29 @@ const getMissingKeywords = (resumeText, jobDescription) => {
 // Get improvement suggestions from OpenAI
 const getImprovementSuggestions = async (resumeText, jobDescription, jobTitle) => {
   try {
+    if (!openai) {
+      // Return default suggestions if OpenAI not configured
+      return {
+        strengths: ["Resume parsed successfully"],
+        weaknesses: ["Configure OpenAI API for detailed analysis"],
+        actionItems: ["Add OPENAI_API_KEY to .env for AI suggestions"],
+        improvementsBySection: {
+          summary: "Add a professional summary matching job requirements",
+          experience: "Highlight relevant work experience aligned with job description",
+          skills: "Include technical and soft skills mentioned in job posting",
+          education: "Add relevant certifications and degrees",
+          projects: "Showcase projects related to job requirements",
+        },
+        suggestedResumeVersions: [
+          {
+            title: "Version for ATS Optimization",
+            changes: ["Use industry standard keywords", "Format with clear sections"],
+            estimatedImpact: "Improve ATS parsing and keyword matching",
+          },
+        ],
+      };
+    }
+
     const prompt = `You are an expert resume coach and career advisor. Analyze this resume against the job description and provide specific, actionable improvement suggestions.
 
 RESUME:
