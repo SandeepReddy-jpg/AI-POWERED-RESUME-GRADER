@@ -6,6 +6,7 @@ import cookieParser from "cookie-parser";
 import { authApp } from "./API/authAPI.js";
 import { resumeApp } from "./API/resumeAPI.js";
 import { analysisApp } from "./API/analysisAPI.js";
+import { jobMatchApp } from "./API/jobMatchAPI.js";
 
 config();
 
@@ -33,6 +34,8 @@ app.use("/api/auth", authApp);
 app.use("/api/resume", resumeApp);
 
 app.use("/api/analysis", analysisApp);
+
+app.use("/api/job-match", jobMatchApp);
 
 // Default Route
 app.get("/", (req, res) => {

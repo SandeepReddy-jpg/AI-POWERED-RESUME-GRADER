@@ -10,6 +10,7 @@ import MyResumes from "./components/MyResumes";
 import ResumeDetail from "./components/ResumeDetail";
 import AnalysisResult from "./components/AnalysisResult";
 import EditSkills from "./components/EditSkills";
+import JobMatcher from "./components/JobMatcher";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Unauthorized from "./components/Unauthorized";
 
@@ -74,6 +75,14 @@ function App() {
           element: (
             <ProtectedRoute>
               <EditSkills />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "job-match/:resumeId",
+          element: (
+            <ProtectedRoute>
+              <JobMatcher />
             </ProtectedRoute>
           ),
         },
