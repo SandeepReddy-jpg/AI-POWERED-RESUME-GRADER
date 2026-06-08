@@ -5,6 +5,102 @@ import toast from "react-hot-toast";
 
 const BASE_URL = "http://localhost:4000/api";
 
+// Predefined companies and roles
+const PREDEFINED_COMPANIES = [
+  { name: "Google", roles: ["Software Engineer", "Product Manager", "Data Scientist", "UX Designer"] },
+  { name: "Microsoft", roles: ["Software Engineer", "Cloud Engineer", "Data Scientist", "Product Manager"] },
+  { name: "Amazon", roles: ["SDE", "Data Scientist", "Product Manager", "Operations Engineer"] },
+  { name: "Meta", roles: ["Software Engineer", "Analytics Engineer", "Product Manager", "UX Engineer"] },
+  { name: "Apple", roles: ["Software Engineer", "Hardware Engineer", "Data Scientist", "Design"] },
+  { name: "Tesla", roles: ["Software Engineer", "Electrical Engineer", "Data Scientist", "Manufacturing Engineer"] },
+  { name: "Netflix", roles: ["Software Engineer", "Data Engineer", "Machine Learning Engineer", "Product Manager"] },
+  { name: "Airbnb", roles: ["Software Engineer", "Data Scientist", "Product Manager", "UX Designer"] },
+  { name: "Uber", roles: ["Software Engineer", "Data Scientist", "Product Manager", "Operations Engineer"] },
+  { name: "Stripe", roles: ["Software Engineer", "Full Stack Developer", "Payment Systems Engineer", "Data Scientist"] },
+  { name: "Coinbase", roles: ["Blockchain Engineer", "Full Stack Developer", "Product Manager", "Data Analyst"] },
+  { name: "Figma", roles: ["Frontend Engineer", "Full Stack Developer", "Product Manager", "Design"] },
+];
+
+// Job descriptions for predefined roles
+const PREDEFINED_JOB_DESCRIPTIONS = {
+  "Google-Software Engineer": `
+Role: Software Engineer at Google
+
+About the Role:
+Google is seeking talented software engineers to join our world-class team. You will work on products that impact billions of users worldwide.
+
+Responsibilities:
+- Design, develop, and maintain scalable software systems
+- Collaborate with cross-functional teams to deliver high-quality products
+- Participate in code reviews and share knowledge with teammates
+- Optimize performance and reliability of services
+
+Requirements:
+- 3+ years of software development experience
+- Strong proficiency in one or more programming languages (Java, C++, Python, Go, JavaScript)
+- Solid understanding of data structures and algorithms
+- Experience with distributed systems or microservices
+- Bachelor's degree in Computer Science or equivalent
+
+Nice to have:
+- Experience with cloud platforms (GCP, AWS, Azure)
+- Familiarity with machine learning concepts
+- Open source contributions
+- Experience mentoring junior engineers
+  `,
+  "Microsoft-Software Engineer": `
+Role: Software Engineer at Microsoft
+
+About the Role:
+Join Microsoft and help shape the future of cloud computing. We're looking for talented engineers to build next-generation technologies.
+
+Responsibilities:
+- Develop and maintain cloud-based solutions
+- Write clean, maintainable, and well-tested code
+- Collaborate with product teams to understand requirements
+- Contribute to architectural decisions and system design
+
+Requirements:
+- 2+ years of professional software development experience
+- Proficiency in C#, C++, Java, or JavaScript
+- Experience with .NET or cloud platforms
+- Strong problem-solving skills
+- Bachelor's degree in Computer Science or related field
+
+Preferred:
+- Experience with Azure cloud services
+- Understanding of DevOps practices
+- Knowledge of containerization (Docker, Kubernetes)
+- Experience with REST APIs
+  `,
+  "Amazon-SDE": `
+Role: Software Development Engineer (SDE) at Amazon
+
+About the Role:
+Amazon is looking for Software Development Engineers to build customer-centric applications. You'll work on systems that serve millions of customers globally.
+
+Responsibilities:
+- Design and implement software solutions
+- Write production-quality code
+- Participate in system design and architecture discussions
+- Mentor junior engineers and contribute to team growth
+- Own end-to-end delivery from design to deployment
+
+Requirements:
+- 2+ years of professional development experience
+- Strong programming skills in Java, C++, Python, or JavaScript
+- Understanding of object-oriented design and data structures
+- Experience with relational and non-relational databases
+- Bachelor's degree in Computer Science or equivalent
+
+Desired:
+- Experience with AWS services
+- Knowledge of distributed systems
+- Familiarity with agile development
+- Experience with large-scale systems
+  `,
+};
+
 const JobMatcher = () => {
   const { resumeId } = useParams();
   const [resumeTitle, setResumeTitle] = useState("Loading...");
@@ -16,8 +112,32 @@ const JobMatcher = () => {
   const [result, setResult] = useState(null);
   const [savedMatches, setSavedMatches] = useState([]);
   const [showSaved, setShowSaved] = useState(false);
+  const [selectedCompany, setSelectedCompany] = useState("");
+  const [selectedRole, setSelectedRole] = useState("");
 
   const token = localStorage.getItem("token");
+
+  // Get predefined job description
+  const handleSelectPredefinedJob = () => {
+    if (!selectedCompany || !selectedRole) {
+      toast.error("Please select both company and role");
+      return;
+    }
+
+    const key = `${selectedCompany}-${selectedRole}`;
+    const predefinedDesc = PREDEFINED_JOB_DESCRIPTIONS[key] || 
+      `Role: ${selectedRole} at ${selectedCompany}\n\nThis is a position for ${selectedRole} at ${selectedCompany}. Please provide specific requirements and responsibilities.`;
+    
+    setJobDescription(predefinedDesc);
+    setJobTitle(selectedRole);
+    setCompany(selectedCompany);
+    toast.success(`Loaded ${selectedRole} position at ${selectedCompany}`);
+  };
+
+  const getRolesByCompany = () => {
+    const companyData = PREDEFINED_COMPANIES.find(c => c.name === selectedCompany);
+    return companyData ? companyData.roles : [];
+  };
 
   // Fetch resume details
   useEffect(() => {
@@ -132,6 +252,57 @@ const JobMatcher = () => {
 
       {/* Input Form */}
       <form onSubmit={handleAnalyzeJob} className="bg-white rounded-lg shadow-md p-6 mb-8">
+        {/* PREDEFINED COMPANIES SECTION */}
+        <div className="mb-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-emerald-200 rounded-lg">
+          <h3 className="text-sm font-bold text-gray-700 mb-4 flex items-center gap-2">
+            ⚡ Quick Match: Select a Predefined Role
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-2">Company</label>
+              <select
+                value={selectedCompany}
+                onChange={(e) => {
+                  setSelectedCompany(e.target.value);
+                  setSelectedRole("");
+                }}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm"
+              >
+                <option value="">Select Company...</option>
+                {PREDEFINED_COMPANIES.map((c) => (
+                  <option key={c.name} value={c.name}>{c.name}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-2">Role</label>
+              <select
+                value={selectedRole}
+                onChange={(e) => setSelectedRole(e.target.value)}
+                disabled={!selectedCompany}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm disabled:opacity-50"
+              >
+                <option value="">Select Role...</option>
+                {getRolesByCompany().map((role) => (
+                  <option key={role} value={role}>{role}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex items-end">
+              <button
+                type="button"
+                onClick={handleSelectPredefinedJob}
+                disabled={!selectedCompany || !selectedRole}
+                className="w-full px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold rounded-lg hover:shadow-lg disabled:opacity-50 transition"
+              >
+                Load Job ✓
+              </button>
+            </div>
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">Job Title *</label>

@@ -478,3 +478,80 @@ analysisApp.get(
     }
   },
 );
+
+// Add Skill to Resume
+analysisApp.post(
+  "/:resumeId/add-skill",
+  verifyToken,
+  async (req, res) => {
+    try {
+      const { resumeId } = req.params;
+      const { skill } = req.body;
+
+      if (!skill || skill.trim().length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: "Skill cannot be empty",
+        });
+      }
+
+      // Find Resume
+      const resume = await Resume.findOne({
+        _id: resumeId,
+        userId: req.user._id,
+      });
+
+      if (!resume) {
+        return res.status(404).json({
+          success: false,
+          message: "Resume not found",
+        });
+      }
+
+      // Add skill to parsed text
+      const skillSection = `\n\nTechnical Skills: ${skill}`;
+      resume.parsedText += skillSection;
+      await resume.save();
+
+      // Re-calculate ATS score
+      const {
+        totalScore,
+        scoreBreakdown,
+        missingSkills,
+        missingBonusSkills,
+        weaknesses,
+      } = calculateATSScore(
+        resume.parsedText,
+        resume.targetRole,
+      );
+
+      // Update analysis
+      const analysis = await Analysis.findOneAndUpdate(
+        { resumeId: resume._id },
+        {
+          atsScore: totalScore,
+          scoreBreakdown,
+          missingSkills,
+          missingBonusSkills,
+          weaknesses,
+          improvedScorePrediction: Math.min(100, totalScore + 5),
+        },
+        { new: true }
+      );
+
+      res.status(200).json({
+        success: true,
+        message: `Skill "${skill}" added successfully. ATS Score updated!`,
+        payload: {
+          newScore: totalScore,
+          analysis,
+        },
+      });
+    } catch (err) {
+      res.status(500).json({
+        success: false,
+        message: err.message,
+      });
+    }
+  },
+);

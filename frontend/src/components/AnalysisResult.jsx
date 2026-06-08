@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router";
 import { toast } from "react-hot-toast";
 import axios from "axios";
+import EnhancedAnalysis from "./EnhancedAnalysis";
 import {
   pageWrapper,
   headingClass,
@@ -252,6 +253,11 @@ function AnalysisResult() {
           </div>
         </div>
       </div>
+
+      <div className={divider}></div>
+
+      {/* ENHANCED ANALYSIS - EDIT, DOWNLOAD, QUICK MATCH */}
+      <EnhancedAnalysis analysis={analysis} resumeId={resumeId} />
 
       <div className={divider}></div>
 
