@@ -267,3 +267,51 @@ resumeApp.put("/:id/text", verifyToken, async (req, res, next) => {
     next(err);
   }
 });
+
+// Update resume content and trigger re-analysis
+resumeApp.post("/:id/update-content", verifyToken, async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const { content } = req.body;
+
+    if (!content || content.trim().length === 0) {
+      return res.status(400).json({ 
+        success: false,
+        message: "Content cannot be empty" 
+      });
+    }
+
+    // Ownership check
+    const resumeDocument = await Resume.findOne({
+      _id: req.params.id,
+      userId,
+    });
+
+    if (!resumeDocument) {
+      return res.status(404).json({ 
+        success: false,
+        message: "Resume not found" 
+      });
+    }
+
+    // Update parsed text
+    resumeDocument.parsedText = content;
+    await resumeDocument.save();
+
+    // Delete old analysis so new one will be generated on next fetch
+    await Analysis.deleteOne({ resumeId: resumeDocument._id });
+
+    res.status(200).json({ 
+      success: true,
+      message: "Resume content updated successfully. Re-analyze to see updated scores.",
+      payload: {
+        id: resumeDocument._id,
+        title: resumeDocument.title,
+        originalFileName: resumeDocument.originalFileName,
+        parsedText: resumeDocument.parsedText,
+      }
+    });
+  } catch (err) {
+    next(err);
+  }
+});
