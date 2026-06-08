@@ -1,0 +1,51 @@
+### Register User
+POST http://localhost:5000/api/auth/register
+Content-Type: application/json
+
+{
+  "name": "sandeep",
+  "email": "sandeep@gmail.com",
+  "password": "12345678"
+}
+
+### Login User
+POST http://localhost:5000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "sandeep@gmail.com",
+  "password": "12345678"
+}
+
+# After login, copy the returned token and replace <token> below.
+
+### Get Profile
+GET http://localhost:5000/api/auth/profile
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhMDQ0ODU5ZGY2MDUyZGRhODZhMGIzYSIsImlhdCI6MTc3OTE3Nzk1NiwiZXhwIjoxNzc5NzgyNzU2fQ.97br8Ubbd1zx-Z27UVc2GM7sXTsoS3hrq879J67puJw
+
+### Upload Resume
+POST http://localhost:5000/api/resume/upload
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhMDQ0ODU5ZGY2MDUyZGRhODZhMGIzYSIsImlhdCI6MTc3OTE3Nzk1NiwiZXhwIjoxNzc5NzgyNzU2fQ.97br8Ubbd1zx-Z27UVc2GM7sXTsoS3hrq879J67puJw
+
+targetRole=Full Stack Developer
+resume=@C:/Users/HP/Downloads/sandeep_resume.pdf
+
+### Get All Resumes
+GET http://localhost:5000/api/resume/all
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhMDQ0ODU5ZGY2MDUyZGRhODZhMGIzYSIsImlhdCI6MTc3OTE3Nzk1NiwiZXhwIjoxNzc5NzgyNzU2fQ.97br8Ubbd1zx-Z27UVc2GM7sXTsoS3hrq879J67puJw
+
+### Get Single Resume
+GET http://localhost:5000/api/resume/6a0c1ab98399ec0f4df1dda6
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhMDQ0ODU5ZGY2MDUyZGRhODZhMGIzYSIsImlhdCI6MTc3OTE3Nzk1NiwiZXhwIjoxNzc5NzgyNzU2fQ.97br8Ubbd1zx-Z27UVc2GM7sXTsoS3hrq879J67puJw
+
+### Delete Resume
+DELETE http://localhost:5000/api/resume/6a0c1ab98399ec0f4df1dda6
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhMDQ0ODU5ZGY2MDUyZGRhODZhMGIzYSIsImlhdCI6MTc3OTE3Nzk1NiwiZXhwIjoxNzc5NzgyNzU2fQ.97br8Ubbd1zx-Z27UVc2GM7sXTsoS3hrq879J67puJw
+
+### Analyze Resume
+POST http://localhost:5000/api/analysis/analyze/6a0c1ab98399ec0f4df1dda6
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhMDQ0ODU5ZGY2MDUyZGRhODZhMGIzYSIsImlhdCI6MTc3OTE3Nzk1NiwiZXhwIjoxNzc5NzgyNzU2fQ.97br8Ubbd1zx-Z27UVc2GM7sXTsoS3hrq879J67puJw
+
+### Get Resume Analysis
+GET http://localhost:5000/api/analysis/6a0c1ab98399ec0f4df1dda6
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhMDQ0ODU5ZGY2MDUyZGRhODZhMGIzYSIsImlhdCI6MTc3OTE3Nzk1NiwiZXhwIjoxNzc5NzgyNzU2fQ.97br8Ubbd1zx-Z27UVc2GM7sXTsoS3hrq879J67puJw

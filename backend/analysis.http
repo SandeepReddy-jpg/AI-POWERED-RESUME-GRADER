@@ -1,0 +1,15 @@
+### Analyze Resume
+# Step 1: Upload resume via resume.http first to get a resumeId.
+# Step 2: Replace 6a0c1ab98399ec0f4df1dda6 below with the _id from the upload response.
+POST http://localhost:5000/api/analysis/analyze/6a0c1ab98399ec0f4df1dda6
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhMDQ0ODU5ZGY2MDUyZGRhODZhMGIzYSIsImlhdCI6MTc3OTE3Nzk1NiwiZXhwIjoxNzc5NzgyNzU2fQ.97br8Ubbd1zx-Z27UVc2GM7sXTsoS3hrq879J67puJw
+
+### Get Resume Analysis
+# Replace 6a0c1ab98399ec0f4df1dda6 with the same _id used above.
+GET http://localhost:5000/api/analysis/6a0c1ab98399ec0f4df1dda6
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhMDQ0ODU5ZGY2MDUyZGRhODZhMGIzYSIsImlhdCI6MTc3OTE3Nzk1NiwiZXhwIjoxNzc5NzgyNzU2fQ.97br8Ubbd1zx-Z27UVc2GM7sXTsoS3hrq879J67puJw
+
+### Re-Analyze Resume
+# Sends the same analyze request again to refresh the stored analysis.
+POST http://localhost:5000/api/analysis/analyze/6a0c1ab98399ec0f4df1dda6
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhMDQ0ODU5ZGY2MDUyZGRhODZhMGIzYSIsImlhdCI6MTc3OTE3Nzk1NiwiZXhwIjoxNzc5NzgyNzU2fQ.97br8Ubbd1zx-Z27UVc2GM7sXTsoS3hrq879J67puJw

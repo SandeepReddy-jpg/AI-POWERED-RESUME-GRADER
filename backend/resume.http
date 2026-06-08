@@ -1,0 +1,31 @@
+### Upload Resume
+# NOTE: Make sure C:/Users/HP/Downloads/sandeep_resume.pdf exists before sending.
+# After upload, copy the "id" from the response and replace 6a0c1ab98399ec0f4df1dda6 below.
+POST http://localhost:5000/api/resume/upload
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhMDQ0ODU5ZGY2MDUyZGRhODZhMGIzYSIsImlhdCI6MTc3OTE3Nzk1NiwiZXhwIjoxNzc5NzgyNzU2fQ.97br8Ubbd1zx-Z27UVc2GM7sXTsoS3hrq879J67puJw
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="targetRole"
+
+Full Stack Developer
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="resume"; filename="sandeep_resume.pdf"
+Content-Type: application/pdf
+
+< C:/Users/HP/Downloads/sandeep_resume.pdf
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### Get All Resumes
+GET http://localhost:5000/api/resume/all
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhMDQ0ODU5ZGY2MDUyZGRhODZhMGIzYSIsImlhdCI6MTc3OTE3Nzk1NiwiZXhwIjoxNzc5NzgyNzU2fQ.97br8Ubbd1zx-Z27UVc2GM7sXTsoS3hrq879J67puJw
+
+### Get Single Resume
+# Replace 6a0c1ab98399ec0f4df1dda6 with the actual _id from the upload response.
+GET http://localhost:5000/api/resume/6a0c1ab98399ec0f4df1dda6
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhMDQ0ODU5ZGY2MDUyZGRhODZhMGIzYSIsImlhdCI6MTc3OTE3Nzk1NiwiZXhwIjoxNzc5NzgyNzU2fQ.97br8Ubbd1zx-Z27UVc2GM7sXTsoS3hrq879J67puJw
+
+### Delete Resume
+# Replace 6a0c1ab98399ec0f4df1dda6 with the actual _id from the upload response.
+DELETE http://localhost:5000/api/resume/6a0c1ab98399ec0f4df1dda6
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhMDQ0ODU5ZGY2MDUyZGRhODZhMGIzYSIsImlhdCI6MTc3OTE3Nzk1NiwiZXhwIjoxNzc5NzgyNzU2fQ.97br8Ubbd1zx-Z27UVc2GM7sXTsoS3hrq879J67puJw
