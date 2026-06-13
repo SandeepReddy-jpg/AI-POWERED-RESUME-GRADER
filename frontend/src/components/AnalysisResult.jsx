@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router";
 import { toast } from "react-hot-toast";
 import axios from "axios";
 import EnhancedAnalysis from "./EnhancedAnalysis";
+import { parseResume, rebuild } from "./ResumeDocumentEditor";
 import {
   pageWrapper,
   headingClass,
@@ -78,6 +79,103 @@ function AnalysisResult() {
       }
     } catch (err) {
       toast.error(err.response?.data?.message || "Re-analysis failed");
+    } finally {
+      setAnalyzing(false);
+    }
+  };
+
+  const quickAddSkill = async (skill) => {
+    setAnalyzing(true);
+    try {
+      const token = localStorage.getItem("token");
+      const currentText = analysis.resumeId?.parsedText || "";
+      const sections = parseResume(currentText);
+      if (!sections.skills.includes(skill)) {
+        sections.skills.push(skill);
+      }
+      const newText = rebuild(sections);
+
+      // Save
+      await axios.post(`${BASE_URL}/resume/${resumeId}/update-content`, 
+        { content: newText },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      // Re-analyze
+      const res = await axios.post(`${BASE_URL}/analysis/analyze/${resumeId}`, 
+        { targetRole: selectedRole },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (res.status === 200) {
+        setAnalysis(res.data.payload);
+        toast.success(`✨ Added "${skill}" and re-analyzed!`);
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to add skill");
+    } finally {
+      setAnalyzing(false);
+    }
+  };
+
+  const applyRewrite = async (original, rewritten) => {
+    setAnalyzing(true);
+    try {
+      const token = localStorage.getItem("token");
+      let currentText = analysis.resumeId?.parsedText || "";
+      
+      const cleanOriginal = original.replace(/^[-•·*0-9.]\s*/, "").trim();
+      const cleanRewritten = rewritten.replace(/^[-•·*0-9.]\s*/, "").trim();
+
+      // Look for the line containing cleanOriginal
+      const lines = currentText.split("\n");
+      const lineIndex = lines.findIndex(line => line.includes(cleanOriginal));
+      let newText = currentText;
+      
+      if (lineIndex !== -1) {
+        const prefix = lines[lineIndex].match(/^[-•·*0-9.]\s*/) ? lines[lineIndex].match(/^[-•·*0-9.]\s*/)[0] : "• ";
+        lines[lineIndex] = prefix + cleanRewritten;
+        newText = lines.join("\n");
+      } else {
+        // Fallback simple replace
+        newText = currentText.replace(original, rewritten);
+      }
+      
+      if (newText === currentText) {
+        // Try to replace case insensitive or substring
+        const foundLine = lines.find(line => line.toLowerCase().includes(cleanOriginal.toLowerCase().substring(0, 15)));
+        if (foundLine) {
+          const prefix = foundLine.match(/^[-•·*0-9.]\s*/) ? foundLine.match(/^[-•·*0-9.]\s*/)[0] : "• ";
+          const foundIdx = lines.indexOf(foundLine);
+          lines[foundIdx] = prefix + cleanRewritten;
+          newText = lines.join("\n");
+        }
+      }
+
+      if (newText === currentText) {
+        toast.error("Could not find the original text in the resume. Try editing it manually.");
+        setAnalyzing(false);
+        return;
+      }
+
+      // Save
+      await axios.post(`${BASE_URL}/resume/${resumeId}/update-content`, 
+        { content: newText },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      // Re-analyze
+      const res = await axios.post(`${BASE_URL}/analysis/analyze/${resumeId}`, 
+        { targetRole: selectedRole },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (res.status === 200) {
+        setAnalysis(res.data.payload);
+        toast.success("✨ Bullet point updated and resume re-analyzed!");
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to apply rewrite");
     } finally {
       setAnalyzing(false);
     }
@@ -200,9 +298,17 @@ function AnalysisResult() {
             <div className="flex flex-wrap gap-2 mt-2">
               {analysis.missingSkills?.length > 0 ? (
                 analysis.missingSkills.map((skill, i) => (
-                  <span key={i} className={missingPill}>
-                    {skill}
-                  </span>
+                  <div key={i} className="flex items-center gap-1.5 bg-[#fff1f1] border border-[#fcd5d5] rounded-full pl-3 pr-1 py-1 text-xs select-none">
+                    <span className="font-semibold text-[#c0392b] capitalize">{skill}</span>
+                    <button 
+                      onClick={() => quickAddSkill(skill)}
+                      disabled={analyzing}
+                      className="bg-[#e05252] text-white font-bold w-5 h-5 rounded-full flex items-center justify-center hover:bg-[#c93d3d] transition-colors cursor-pointer text-[10px] disabled:opacity-50"
+                      title="Quick Add to Resume"
+                    >
+                      +
+                    </button>
+                  </div>
                 ))
               ) : (
                 <span className="text-sm text-[#2ecc8a] font-medium">
@@ -217,9 +323,17 @@ function AnalysisResult() {
               <p className={analysisSectionTitle}>Recommended Additions (Bonus)</p>
               <div className="flex flex-wrap gap-2 mt-2">
                 {analysis.missingBonusSkills.map((skill, i) => (
-                  <span key={i} className="bg-[#f9f6f2] border border-[#e8e3dc] text-[#5c5470] text-xs px-3 py-1.5 rounded-full capitalize">
-                    {skill}
-                  </span>
+                  <div key={i} className="flex items-center gap-1.5 bg-[#f4f1ff] border border-[#d4cff7] rounded-full pl-3 pr-1 py-1 text-xs select-none">
+                    <span className="font-semibold text-[#5548e0] capitalize">{skill}</span>
+                    <button 
+                      onClick={() => quickAddSkill(skill)}
+                      disabled={analyzing}
+                      className="bg-[#6c63ff] text-white font-bold w-5 h-5 rounded-full flex items-center justify-center hover:bg-[#5548e0] transition-colors cursor-pointer text-[10px] disabled:opacity-50"
+                      title="Quick Add to Resume"
+                    >
+                      +
+                    </button>
+                  </div>
                 ))}
               </div>
             </div>
@@ -298,15 +412,25 @@ function AnalysisResult() {
                       <p className="text-sm text-[#5c5470] italic">"{rewrite.original}"</p>
                     </div>
                     {/* Rewritten */}
-                    <div className="p-6 bg-[#f0fdf4]/30 relative overflow-hidden">
+                    <div className="p-6 bg-[#f0fdf4]/30 relative overflow-hidden flex flex-col justify-between min-h-[140px]">
                       {/* Decorative accent */}
                       <div className="absolute top-0 right-0 w-16 h-16 bg-[#2ecc8a]/5 rounded-bl-full" />
                       
-                      <p className="text-xs font-bold text-[#2ecc8a] uppercase tracking-widest mb-3 flex items-center gap-2 relative z-10">
-                        <span className="w-4 h-4 rounded-full bg-[#e6fcf0] flex items-center justify-center">✓</span> 
-                        Rewritten (Strong)
-                      </p>
-                      <p className="text-sm font-medium text-[#1a1a2e] relative z-10">"{rewrite.rewritten}"</p>
+                      <div className="relative z-10">
+                        <p className="text-xs font-bold text-[#2ecc8a] uppercase tracking-widest mb-3 flex items-center gap-2">
+                          <span className="w-4 h-4 rounded-full bg-[#e6fcf0] flex items-center justify-center">✓</span> 
+                          Rewritten (Strong)
+                        </p>
+                        <p className="text-sm font-medium text-[#1a1a2e] mb-4">"{rewrite.rewritten}"</p>
+                      </div>
+                      
+                      <button
+                        onClick={() => applyRewrite(rewrite.original, rewrite.rewritten)}
+                        disabled={analyzing}
+                        className="relative z-10 self-start bg-[#2ecc8a] text-white text-xs font-bold px-4 py-2 rounded-xl hover:bg-[#27ae76] hover:shadow-md transition-all flex items-center gap-1.5 disabled:opacity-50 cursor-pointer"
+                      >
+                        ⚡ Apply Suggestion & Re-Analyze
+                      </button>
                     </div>
                   </div>
                   {/* Explanation */}

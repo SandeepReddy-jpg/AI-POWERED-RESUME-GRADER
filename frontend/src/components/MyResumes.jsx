@@ -65,11 +65,6 @@ function MyResumes() {
     navigate(`/resume/${resumeObj._id}`, { state: resumeObj });
   };
 
-  //navigate to job match
-  const onMatchJob = (resumeId) => {
-    navigate(`/job-match/${resumeId}`);
-  };
-
   //format date IST
   const formatDate = (date) => {
     return new Date(date).toLocaleString("en-IN", {
@@ -120,12 +115,8 @@ function MyResumes() {
                   >
                     View →
                   </button>
-                  <button                    className="text-[#6c63ff] text-sm font-medium hover:text-[#5552cc] transition cursor-pointer"
-                    onClick={() => onMatchJob(resumeObj._id)}
-                  >
-                    Match Job
-                  </button>
-                  <button                    className="text-[#e05252] text-sm font-medium hover:text-[#c93d3d] transition cursor-pointer"
+                  <button
+                    className="text-[#e05252] text-sm font-medium hover:text-[#c93d3d] transition cursor-pointer"
                     onClick={() => onDeleteResume(resumeObj._id)}
                   >
                     Delete

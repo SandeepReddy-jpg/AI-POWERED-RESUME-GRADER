@@ -274,12 +274,6 @@ function ResumeDetail() {
         >
           {analyzing ? "Analyzing..." : "Run AI Analysis"}
         </button>
-        <button
-          className="bg-[#6c63ff] text-white font-medium px-5 py-2 rounded-full hover:bg-[#5548e0] transition-colors cursor-pointer text-sm"
-          onClick={() => navigate(`/job-match/${id}`)}
-        >
-          🎯 Match Job
-        </button>
         <button className="border border-[#e8e3dc] text-[#1a1a2e] font-medium px-5 py-2 rounded-full hover:bg-[#f4f1ee] transition-colors cursor-pointer text-sm" onClick={onViewAnalysis}>
           View Existing Analysis
         </button>

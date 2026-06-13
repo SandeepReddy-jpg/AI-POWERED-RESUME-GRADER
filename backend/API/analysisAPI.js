@@ -265,32 +265,98 @@ const getFallbackAnalysis = (
   targetRole,
   missingSkills,
   atsScore,
+  resumeText = ""
 ) => {
+  const lines = resumeText.split("\n").map(l => l.trim()).filter(Boolean);
+  const weakActionVerbs = ["helped", "assisted", "worked", "responsible", "handled", "managed", "support", "tested", "wrote", "did"];
+  
+  // Identify candidate weak bullet points in the resume
+  const candidateBullets = lines.filter(line => {
+    const clean = line.replace(/^[-•·*0-9.]\s*/, "").trim();
+    const hasWeakVerb = weakActionVerbs.some(verb => clean.toLowerCase().includes(verb));
+    const noMetrics = !/\d+%|\d+x|\$[\d,]+|\d+ users|\d+ million|\d+k/i.test(clean);
+    return clean.length > 25 && clean.length < 160 && hasWeakVerb && noMetrics;
+  });
+
+  const selectedBullet = candidateBullets[0] || lines.find(l => l.length > 35 && l.length < 140) || "Worked on backend tickets and handled server tasks.";
+  const cleanOriginal = selectedBullet.replace(/^[-•·*0-9.]\s*/, "").trim();
+
+  // Custom role-based rewrites
+  const rewrites = {
+    "Frontend Developer": {
+      rewritten: "Engineered and deployed 12+ responsive user interfaces using React and Tailwind CSS, improving page load speed by 35% and user engagement by 18%.",
+      explanation: "Swapped passive description with strong impact-driven action verbs (Engineered, Deployed) and added measurable performance metrics."
+    },
+    "Backend Developer": {
+      rewritten: "Architected and optimized scalable REST APIs using Node.js and Express, reducing server response times by 40% and supporting over 10,000 daily active users.",
+      explanation: "Shows technical ownership (Architected, Optimized) and introduces key API scalability metrics."
+    },
+    "Full Stack Developer": {
+      rewritten: "Led full-lifecycle development of 3 web applications utilizing the MERN stack, resulting in a 25% increase in operational efficiency and 99.9% uptime.",
+      explanation: "Demonstrates end-to-end fullstack ownership with performance and availability metrics."
+    },
+    "Data Analyst": {
+      rewritten: "Developed interactive Tableau dashboards and automated ETL pipelines, saving the analytics team 12+ weekly hours and improving data reporting accuracy by 22%.",
+      explanation: "Details the specific tool stack (Tableau, ETL) and quantifies time-savings and data accuracy improvements."
+    },
+    "Data Scientist": {
+      rewritten: "Built and tuned predictive machine learning models using Python and Scikit-Learn, increasing classification precision by 15% and saving $45K in operational costs.",
+      explanation: "Highlights machine learning skill application and attaches clear financial and accuracy metrics."
+    },
+    "DevOps Engineer": {
+      rewritten: "Containerized applications with Docker and established automated CI/CD pipelines in GitHub Actions, reducing deployment time by 60% and configuration errors by 80%.",
+      explanation: "Focuses on modernization and quantifies release speedups and reliability improvements."
+    },
+    "Product Manager": {
+      rewritten: "Managed product roadmap and prioritized backlog across a 6-person engineering team, delivering 4 key features on schedule and increasing NPS score by 14 points.",
+      explanation: "Emphasizes team coordination and user feedback metrics (NPS, on-schedule delivery)."
+    },
+    "UI/UX Designer": {
+      rewritten: "Designed comprehensive user journeys and high-fidelity Figma prototypes, reducing user drop-off rate by 28% and increasing registration conversions by 15%.",
+      explanation: "Uses designer-specific terminology and links design choices directly to business conversion metrics."
+    },
+    "Mobile Developer": {
+      rewritten: "Engineered and published 2 cross-platform React Native apps, achieving a 4.8 star store rating and supporting 50K+ downloads.",
+      explanation: "Demonstrates public release experience and uses store ratings and downloads as strong evidence of quality."
+    },
+    "QA Engineer": {
+      rewritten: "Authored automated Selenium test suites, increasing regression test coverage from 45% to 92% and preventing 30+ critical production bugs.",
+      explanation: "Quantifies test coverage improvement and highlights preventative QA impact."
+    }
+  };
+
+  const roleRewrite = rewrites[targetRole] || {
+    rewritten: "Spearheaded execution of high-impact technical initiatives, boosting system throughput by 25% and reducing operational overhead.",
+    explanation: "Replaced passive description with quantitative delivery and action verbs."
+  };
+
+  const recs = [];
+  
+  if (missingSkills.length > 0) {
+    recs.push(`Quick-add the missing core skills: ${missingSkills.slice(0, 4).join(", ")} directly from the report.`);
+  }
+  recs.push("Quantify achievements: Add numbers, percentages, or dollar values to showcase measurable impact.");
+  recs.push("Begin experience and project bullet points with action verbs (e.g. Spearheaded, Engineered).");
+  recs.push("Improve structural layout using one of our modern, professionally designed templates.");
+
+  let feedback = `Your resume matches ${Math.round(atsScore)}% of typical requirements for a ${targetRole}. `;
+  if (atsScore < 50) {
+    feedback += "The formatting is fine, but it severely lacks technical keywords and measurable achievements. Highlight specific tools used and quantify your impact.";
+  } else if (atsScore < 75) {
+    feedback += "Good foundation. To stand out, replace passive verbs with executive action verbs and focus more on the outcome of your projects rather than just tasks.";
+  } else {
+    feedback += "Excellent resume with great keyword match and clear structure. Double-check formatting consistency and template layout before submitting.";
+  }
+
   return {
-    recommendations: [
-      `Add missing skills like ${missingSkills
-        .slice(0, 3)
-        .join(", ")}`,
-
-      "Use quantified achievements",
-
-      "Improve project descriptions",
-
-      `Add more ${targetRole} projects`,
-    ],
-
-    recruiterFeedback: `Resume has potential for ${targetRole} role but needs stronger technical presentation and measurable achievements.`,
-
-    improvedScorePrediction: Math.min(
-      atsScore + 20,
-      95,
-    ),
-    
+    recommendations: recs,
+    recruiterFeedback: feedback,
+    improvedScorePrediction: Math.min(atsScore + 15, 98),
     bulletPointRewrites: [
       {
-        original: "Worked on frontend tickets",
-        rewritten: "Developed and shipped 15+ complex React components, reducing bug resolution time by 30%",
-        explanation: "Quantifies the work and uses strong action verbs instead of passive phrases."
+        original: selectedBullet,
+        rewritten: roleRewrite.rewritten,
+        explanation: roleRewrite.explanation
       }
     ]
   };
@@ -373,6 +439,7 @@ analysisApp.post(
             resume.targetRole,
             missingSkills,
             totalScore,
+            resume.parsedText,
           );
         }
       } catch (err) {
@@ -380,6 +447,7 @@ analysisApp.post(
           resume.targetRole,
           missingSkills,
           totalScore,
+          resume.parsedText,
         );
       }
 
@@ -422,6 +490,11 @@ analysisApp.post(
           },
         );
 
+      await analysis.populate(
+        "resumeId",
+        "originalFileName targetRole resumeUrl parsedText",
+      );
+
       // Response
       res.status(200).json({
         success: true,
@@ -452,7 +525,7 @@ analysisApp.get(
           resumeId,
         }).populate(
           "resumeId",
-          "originalFileName targetRole",
+          "originalFileName targetRole resumeUrl parsedText",
         );
 
       // Analysis Not Found
@@ -554,4 +627,140 @@ analysisApp.post(
       });
     }
   },
+);
+
+// Fallback generator for section enhancement if no OpenAI API key is present
+const getFallbackEnhancement = (section, content, targetRole) => {
+  if (section === "summary") {
+    return `Results-driven and highly motivated ${targetRole} with a strong foundation in modern software engineering principles and data-driven problem solving. Experienced in designing, developing, and deploying scalable applications while optimizing performance. Proven track record of collaborating in fast-paced teams to deliver high-quality, ATS-optimized solutions that drive business value.`;
+  }
+  if (section === "skills") {
+    const roleConfig = ROLE_SKILLS[targetRole] || { core: [], bonus: [] };
+    const existing = content.split(/[,\n]/).map(s => s.trim()).filter(Boolean);
+    const added = [...roleConfig.core.slice(0, 5), ...roleConfig.bonus.slice(0, 5)];
+    const allSkills = [...new Set([...existing, ...added])];
+    return allSkills.join(", ");
+  }
+  if (section === "experience" || section === "projects") {
+    const lines = content.split("\n");
+    return lines.map(line => {
+      const trimmed = line.trim();
+      if (!trimmed) return "";
+      // If it looks like a bullet point or list item, enhance it
+      if (trimmed.startsWith("•") || trimmed.startsWith("-") || trimmed.startsWith("*")) {
+        const bulletText = trimmed.replace(/^[-•*]\s*/, "");
+        if (bulletText.toLowerCase().includes("develop") || bulletText.toLowerCase().includes("built")) {
+          return `• Spearheaded development of core features, boosting user engagement by 25% and reducing load times by 40%`;
+        }
+        if (bulletText.toLowerCase().includes("test") || bulletText.toLowerCase().includes("bug")) {
+          return `• Automated end-to-end testing protocols, achieving 90%+ test coverage and reducing production bugs by 35%`;
+        }
+        return `• Optimized workflow processes and implemented best practices to improve system efficiency by 15%`;
+      }
+      return trimmed;
+    }).filter(Boolean).join("\n");
+  }
+  return content;
+};
+
+// AI Enhance section route
+analysisApp.post(
+  "/:resumeId/enhance-section",
+  verifyToken,
+  async (req, res) => {
+    try {
+      const { resumeId } = req.params;
+      const { section, content } = req.body;
+
+      if (!section || !content || content.trim().length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: "Section and content are required",
+        });
+      }
+
+      // Find Resume
+      const resume = await Resume.findOne({
+        _id: resumeId,
+        userId: req.user._id,
+      });
+
+      if (!resume) {
+        return res.status(404).json({
+          success: false,
+          message: "Resume not found",
+        });
+      }
+
+      const targetRole = resume.targetRole || "Professional";
+
+      // Build prompts
+      const systemPrompt = "You are an expert resume writer and ATS optimization engine.";
+      let userPrompt = "";
+
+      if (section === "contact") {
+        userPrompt = `Clean up and format this contact information section for a resume. Make sure it is standard, readable, and professional. Do not add any conversational text or explanation. Only return the cleaned contact details.
+Content to clean:
+${content}`;
+      } else if (section === "summary") {
+        userPrompt = `Rewrite this professional summary to be a compelling, 3-sentence, ATS-optimized summary highlighting key technical achievements and strengths for a "${targetRole}" role. Do not add any conversational text or explanation. Only return the rewritten summary.
+Content to rewrite:
+${content}`;
+      } else if (section === "experience") {
+        userPrompt = `Enhance this professional experience entry for a "${targetRole}" role. Retain the same core jobs and responsibilities, but rewrite all bullet points to start with strong action verbs and include quantifiable metrics, business impact, or tech stack where possible. Do not add any conversational text or explanation. Only return the rewritten experience block (preserving standard titles and bullets).
+Content to enhance:
+${content}`;
+      } else if (section === "skills") {
+        userPrompt = `Suggest an optimized, comma-separated list of technical skills for a "${targetRole}" role, starting with the user's current skills: ${content}. Add highly relevant standard industry technical skills that would boost their ATS match score for a "${targetRole}". Return ONLY the technical skills as a comma-separated list. No numbering, no introduction.`;
+      } else if (section === "education") {
+        userPrompt = `Format this education section clearly and professionally. Ensure degree, institution, location, dates, and GPA/CGPA are clear. Do not add any conversational text or explanation. Only return the formatted education block.
+Content to format:
+${content}`;
+      } else if (section === "projects") {
+        userPrompt = `Enhance this project entry for a "${targetRole}" role. Rewrite descriptions to be strong, impact-driven bullet points showcasing technologies used, key problems solved, and results achieved. Do not add any conversational text or explanation. Only return the rewritten project block.
+Content to enhance:
+${content}`;
+      } else if (section === "certifications") {
+        userPrompt = `Format this certifications/licenses section professionally. Do not add any conversational text or explanation. Only return the formatted certifications block.
+Content to format:
+${content}`;
+      } else {
+        userPrompt = `Enhance and optimize this section for a "${targetRole}" resume:
+${content}`;
+      }
+
+      let enhancedText = "";
+
+      if (process.env.OPENAI_API_KEY) {
+        const openai = new OpenAI({
+          apiKey: process.env.OPENAI_API_KEY,
+        });
+
+        const response = await openai.chat.completions.create({
+          model: "gpt-3.5-turbo",
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userPrompt },
+          ],
+          temperature: 0.7,
+        });
+
+        enhancedText = response.choices[0].message.content.trim();
+      } else {
+        enhancedText = getFallbackEnhancement(section, content, targetRole);
+      }
+
+      res.status(200).json({
+        success: true,
+        data: {
+          enhanced: enhancedText,
+        },
+      });
+    } catch (err) {
+      res.status(500).json({
+        success: false,
+        message: err.message,
+      });
+    }
+  }
 );
