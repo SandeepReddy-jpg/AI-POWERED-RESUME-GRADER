@@ -2,8 +2,8 @@ import { useState, useCallback, useEffect } from "react";
 import { toast } from "react-hot-toast";
 import axios from "axios";
 import { TEMPLATES, StyledPreview, buildResumeHTML } from "./ResumeTemplates";
+import BASE_URL from "../config/api";
 
-const BASE_URL = "http://localhost:4000/api";
 
 /* ── parse plain text into sections ── */
 export const parseResume = (text) => {

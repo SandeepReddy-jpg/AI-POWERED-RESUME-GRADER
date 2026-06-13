@@ -12,8 +12,8 @@ import {
   analysisSectionTitle,
   ghostBtn,
 } from "../styles/common";
+import BASE_URL from "../config/api";
 
-const BASE_URL = "http://localhost:4000/api";
 
 function EditSkills() {
   const { resumeId } = useParams();

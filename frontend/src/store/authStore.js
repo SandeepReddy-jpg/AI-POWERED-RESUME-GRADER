@@ -1,7 +1,6 @@
 import { create } from "zustand";
 import axios from "axios";
-
-const BASE_URL = "http://localhost:4000/api";
+import BASE_URL from "../config/api";
 
 export const useAuth = create((set) => ({
   currentUser: null,

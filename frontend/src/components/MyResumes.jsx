@@ -14,8 +14,8 @@ import {
   emptyStateClass,
   timestampClass,
 } from "../styles/common";
+import BASE_URL from "../config/api";
 
-const BASE_URL = "http://localhost:4000/api";
 
 function MyResumes() {
   const navigate = useNavigate();

@@ -13,8 +13,8 @@ import {
   divider,
   timestampClass,
 } from "../styles/common";
+import BASE_URL from "../config/api";
 
-const BASE_URL = "http://localhost:4000/api";
 
 function ResumeDetail() {
   const { id } = useParams();

@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import { useParams } from "react-router";
 import axios from "axios";
 import toast from "react-hot-toast";
+import BASE_URL from "../config/api";
 
-const BASE_URL = "http://localhost:4000/api";
 
 // Predefined companies and roles
 const PREDEFINED_COMPANIES = [
